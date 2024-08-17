@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Stream</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1, h2, p {
+            color: #4a4a4a;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 640px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Face Attendance Video Stream</h1>
+        <p>PLease Wait while we verify your face!</p>
+        <img id="video" src="{{ url_for('video') }}" alt="Video Stream">
+    </div>
+    
+    <script>
+        let startTime = Date.now();
+        let minWaitTime = 10000; // 10 seconds in milliseconds
+        let maxWaitTime = 20000; // 20 seconds in milliseconds
+
+        function checkFace() {
+            fetch('/check_face')
+                .then(response => response.json())
+                .then(data => {
+                    let currentTime = Date.now();
+                    if (data.recognized) {
+                        if (currentTime - startTime >= minWaitTime) {
+                            fetch('/stop_camera')
+                                .then(() => {
+                                    window.location.href = '/classes';
+                                });
+                        } else {
+                            setTimeout(checkFace, 1000);
+                        }
+                    } else if (currentTime - startTime >= maxWaitTime) {
+                        alert("Your face is not recognized. You might not have registered with the course.");
+                        fetch('/stop_camera');
+                    } else {
+                        setTimeout(checkFace, 1000); 
+                    }
+                });
+        }
+
+        
+        setTimeout(checkFace, minWaitTime);
+    </script>
+</body>
+</html>
+
