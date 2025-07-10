@@ -4,4 +4,3 @@ __pycache__/
 *.egg-info/
 .env
 venv/
-node_modules/
